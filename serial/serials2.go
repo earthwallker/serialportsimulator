@@ -6,7 +6,7 @@ import (
 	"log"
 	"serialportsimulator/model"
 	"serialportsimulator/mymodbuscrc"
-	_"serialportsimulator/utils"
+	"serialportsimulator/replaces"
 	"time"
 	"math"
 
@@ -57,7 +57,7 @@ func SerialListen(comName string) {
 
 	for {
 		buf := make([]byte, 100)
-		packets := make([]byte, 5)
+		packets := make([]byte, 0)//packets := make([]byte, 5)  append会直接出现00000
 
 		n, err := port.Read(buf)
 		if err != nil {
@@ -92,6 +92,8 @@ func SerialListen(comName string) {
 				}
 				
 				data := make([]byte, count)
+                //模拟设备写入JSON文件
+				replaces.ReplaceData(data ,functionCode,registerAddress,registerCount)
 
 				fmt.Printf("Slave ID: %d\n", slaveID)
 				fmt.Printf("Function Code: %d\n", functionCode)
@@ -102,6 +104,8 @@ func SerialListen(comName string) {
 				packets = append(packets, functionCode)
 				packets = append(packets, byte(registerCount*2))
 				
+
+
 				packets = append(packets, data...)
 				crc1,crc2:=mymodbuscrc.ModbusCrc(packets)
 			
@@ -117,7 +121,7 @@ func SerialListen(comName string) {
 					log.Fatal(err)
 				}
 
-
+                // fmt.Println(packets)
 		}
 	}
 
